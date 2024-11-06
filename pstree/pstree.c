@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         }
     }
   }
-  
+
   //todo 2.根据链表遍历文件夹，读取关键文件获取其父id
   FILE *fp;
   char line[256];
@@ -71,8 +71,6 @@ int main(int argc, char *argv[]) {
   }
   printf("parent = %s \n", ppid);
   fclose(fp);
-
-
 
 
 
