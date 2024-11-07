@@ -1,94 +1,120 @@
 #include <unistd.h>
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-struct process
+typedef struct
 {
     pid_t pid;
     char *name;
-};
+} process;
 
 
-struct tree_node
+typedef struct tree
 {
-    struct process *data;
-    struct link_node *children;
-};
+    process *data;
+    struct tree *children;
+    struct tree *next;
+} tree;
 
-struct link_node
-{
-    struct tree_node *data;
-    struct link_node *next;
-};
+//method
+process *create_process(pid_t pid, char *name);
+tree *create_tree(process *d);
+tree *put_child(tree *father, tree *child);
+static tree *found_end(tree *head);
 
-struct process *create_process(pid_t pid, char *name){
-    struct process *p = (struct process *)malloc(sizeof(struct process));
+
+
+process *create_process(pid_t pid, char *name){
+    process *p = (process *)malloc(sizeof(process));
     p->pid = pid;
     p->name = name;
     return p;
 }
 
-struct link_node *create_link(struct tree_node *node) {
-    struct link_node *link = (struct link_node *)malloc(sizeof(struct link_node));
-    link -> data = node;
-    link -> next = NULL;
-    return link;
+tree *create_tree(process *d) {
+    tree *t = (tree *)malloc(sizeof(tree));
+    t->data = d;
+    t->children = NULL;
+    t->next = NULL;
+
+    return t;
 }
 
-struct tree_node *create_tree(struct process *p, struct link_node *child) {
-    struct tree_node *node = (struct tree_node *)malloc(sizeof(struct tree_node));
-    node -> data = p;
-    // 这里的child 是一个链表
-    if (child!= NULL) {
-        node -> children = insert_link(node -> children, child -> data);
+tree *put_child(tree *father, tree *child) {
+    if (father -> children == NULL) {
+        father->children = child;
+        return child;
     } else {
-        node -> children = NULL;
+        tree * end = found_end(father ->children);
+        end ->next = child;
     }
-    return node;
 }
 
-struct link_node *insert_link(struct link_node *head, struct tree_node *node) {
-    struct link_node *link = create_link(node);
-
-    if (head == NULL) {
-        return link;
+static tree *found_end(tree *head) {
+    if (head->next == NULL) {
+        return head;
+    } else {
+        return found_end(head->next);
     }
-
-    struct link_node *end = head;
-    while (end -> next!= NULL) {
-        end = end -> next;
-    }
-
-    end -> next = link;
-    return head;
 }
 
-//todo 遍历找到目标目标进程
 
+//最重要的问题，如何构建这棵树？
+/**
+ * 0.先找树中是否存在当前pid，存在就将name更新进去。
+ * 1.查找树中是否存在parent
+ * 2.不存在就新增一个没有name的node，挂在root下，并将当前进程挂在在该node下
+ * 3.存在就将当前进程挂在node的child下
+ */
+void insert_tree(tree *root, process cur, pid_t parent) {
+    
+}
 
-struct tree_node *find_process(struct tree_node *root, pid_t pid) {
-    if (root == NULL) {
-        return NULL;
-    }
-    if (root -> children == NULL) {
-        return NULL;
-    }
-    struct link_node *child = root -> children;
-
-    if (child ->data ->data -> pid == pid) {
-        return child -> data;
-    }
-    while (child -> next!= NULL)
-    {
-        child = child -> next;
-        struct tree_node *node = find_process(child -> data, pid);
-        if (node != NULL) {
-            return node;
+static tree *found_pid(tree *root, pid_t pid) {
+    tree * rs = NULL;
+    if (root -> data ->pid == pid) {
+        return root;
+    } 
+    if (root -> next != NULL) {
+        rs = found_pid(root->next, pid);
+        if (rs != NULL) {
+            return rs;
         }
     }
+    if (root ->children != NULL) {
+        return found_pid(root->children, pid);
+    }
+
     return NULL;
 }
 
-//todo 排序
+
+
+int main(int argc, char *argv[]) {
+
+    process *root_p = create_process(0, "systemd");
+    tree *root = create_tree(root_p);
+
+    process *root_p1 = create_process(1, "0-1");
+    tree *node1 = create_tree(root_p1);
+    root->children = node1;
+
+    process *root_p2 = create_process(2, "0-2");
+    tree *node2 = create_tree(root_p2);
+    node1->next = node2;
+
+    process *root_p3 = create_process(3, "2-3 lalala");
+    tree *node3 = create_tree(root_p3);
+    node2->children = node3;
+
+
+    tree *target = found_pid(root, 3);
+    printf("find! %s \n", target->data->name);
+
+    return 0;
+}
+
 
 
 
