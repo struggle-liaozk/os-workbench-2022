@@ -1,39 +1,10 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-
-typedef struct
-{
-    pid_t pid;
-    char *name;
-} process;
+#include "tree.h"
 
 
-typedef struct tree
-{
-    process *data;
-    struct tree *children;
-    struct tree *next;
-} tree;
 
-//method
-process *create_process(pid_t pid, char *name);
-tree *create_tree(process *d);
-tree *put_child(tree *father, tree *child);
 static tree *found_end(tree *head);
 static tree *found_cur_p_pid(tree *prior, tree *root, pid_t pid);
-void insert_tree(tree *root, process *cur, pid_t parent_id);
 static tree *found_pid(tree *root, pid_t pid);
-tree *delete_child(tree *head, tree *target);
-void delete_peer(tree *prior, tree *cur, tree *target);
-//未验证
-void insert_tree(tree *root, process *cur, pid_t parent_id);
-void print_tree(char *prefix, tree *root);
-
-
 
 
 process *create_process(pid_t pid, char *name){
@@ -180,25 +151,29 @@ static tree *found_cur_p_pid(tree *prior, tree *root, pid_t pid) {
 
 //a final method to print tree. success is comming
 
-void print_tree(char *prefix, tree *root){
+void print_tree(char *prefix, tree *root, int mark_p){
     if (root -> data != NULL) {
-        printf("%s %s \n", prefix, root->data->name);
+        if (mark_p) {
+            printf("%s %s(%d) \n", prefix, root->data->name, root->data->pid);
+        } else {
+            printf("%s %s \n", prefix, root->data->name);
+        } 
     }
     if (root->children != NULL) {
-        char *newprefix = (char *)malloc(sizeof(prefix) + 3);
-        strcat(newprefix, prefix);
+        char *newprefix = (char *)malloc(strlen(prefix) + 3 +1);
+        strcpy(newprefix, prefix);
         strcat(newprefix, "|--");
-        print_tree(newprefix, root->children);
+        print_tree(newprefix, root->children, mark_p);
     }
     if (root->next != NULL) {
-        print_tree(prefix, root->next);
+        print_tree(prefix, root->next, mark_p);
     }
 }
 
 
 
 
-
+/*
 int main(int argc, char *argv[]) {
 
     // init 
@@ -261,6 +236,7 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+*/
 
 
 
