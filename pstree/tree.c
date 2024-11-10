@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 
 typedef struct
 {
@@ -22,13 +24,15 @@ process *create_process(pid_t pid, char *name);
 tree *create_tree(process *d);
 tree *put_child(tree *father, tree *child);
 static tree *found_end(tree *head);
-static tree *found_p_pid(tree *prior, tree *root, pid_t pid);
+static tree *found_cur_p_pid(tree *prior, tree *root, pid_t pid);
 void insert_tree(tree *root, process *cur, pid_t parent_id);
 static tree *found_pid(tree *root, pid_t pid);
-
-//未验证
 tree *delete_child(tree *head, tree *target);
 void delete_peer(tree *prior, tree *cur, tree *target);
+//未验证
+void insert_tree(tree *root, process *cur, pid_t parent_id);
+void print_tree(char *prefix, tree *root);
+
 
 
 
@@ -107,34 +111,33 @@ static tree *found_end(tree *head) {
  */
 void insert_tree(tree *root, process *cur, pid_t parent_id) {
     
+    
     tree *target = found_pid(root, cur->pid);
     if (target != NULL) {
+        //当前节点存在
         target ->data = cur;
-        tree *father = found_p_pid(NULL, root, cur->pid);
-        if (father != NULL) {
-            if (father->children == target) {
-                father->children = NULL;
-            } else {
-
-            }
-        }
-
+        tree *father = found_cur_p_pid(NULL, root, cur->pid);
+        assert(father);//按照我们的逻辑，一定有父节点
+        father->children =  delete_child(father->children, target);
+    } else {
+        //当前节点不存在
+        target = (tree *)malloc(sizeof(tree));
+        target->data = cur;
+        target->children = NULL;
+        target->next = NULL;
     }
+    
+    //将当前节点放到合适的父节点下
     tree *parent_node = found_pid(root, parent_id);
 
-    tree *child = (tree *)malloc(sizeof(tree));
-    child->data = cur;
-    child->children = NULL;
-    child->next = NULL;
-
     if (parent_node != NULL) {
-        put_child(parent_node, child);
+        put_child(parent_node, target);
     } else {
         parent_node = (tree *)malloc(sizeof(tree));
         parent_node->data = create_process(parent_id, "");
 
         put_child(root, parent_node);
-        put_child(parent_node, child);
+        put_child(parent_node, target);
     }
 }
 
@@ -156,23 +159,43 @@ static tree *found_pid(tree *root, pid_t pid) {
     return NULL;
 }
 
-static tree *found_p_pid(tree *prior, tree *root, pid_t pid) {  
+static tree *found_cur_p_pid(tree *prior, tree *root, pid_t pid) {  
     tree *rs = NULL;
     if (root->data->pid == pid) {
         return prior;
     }
     if (root->next != NULL) {
-        rs = found_p_pid(prior, root->next, pid);
+        rs = found_cur_p_pid(prior, root->next, pid);
         if (rs != NULL) {
             return rs;
         }
     }
     if (root -> children != NULL) {
-        return found_p_pid(root, root->children, pid);
+        return found_cur_p_pid(root, root->children, pid);
     }
 
     return NULL;
 }
+
+
+//a final method to print tree. success is comming
+
+void print_tree(char *prefix, tree *root){
+    if (root -> data != NULL) {
+        printf("%s %s \n", prefix, root->data->name);
+    }
+    if (root->children != NULL) {
+        char *newprefix = (char *)malloc(sizeof(prefix) + 3);
+        strcat(newprefix, prefix);
+        strcat(newprefix, "|--");
+        print_tree(newprefix, root->children);
+    }
+    if (root->next != NULL) {
+        print_tree(prefix, root->next);
+    }
+}
+
+
 
 
 
@@ -194,28 +217,47 @@ int main(int argc, char *argv[]) {
     tree *node3 = create_tree(root_p3);
     node2->children = node3;
 
-    //test delete
+    process *root_p11 = create_process(11, "2-11 lalala");
+    tree *node11 = create_tree(root_p11);
+    put_child(node2, node11);
 
+    process *root_p12 = create_process(12, "1-12 lalala");
+    tree *node12 = create_tree(root_p12);
+    put_child(node1, node12);
+
+    //test delete
+    //node2->children = delete_child(node2->children, node3);
     
 
 
     // test insert
-    /*
+    
     process *root_p4 = create_process(4, "2-4 yeyeye");
     insert_tree(root, root_p4, 2);
 
-    process *root_p5 = create_process(4, "1-5 yeyeye");
-    process *root_p6 = create_process(4, "5-6 yeyeye");
+    process *root_p5 = create_process(5, "1-5 yeyeye");
+    process *root_p6 = create_process(6, "5-6 yeyeye");
     insert_tree(root, root_p6, 5);
     insert_tree(root, root_p5, 1);
-    */
+    
     
 
 
-    tree *target = found_pid(root, (pid_t)3);
-    tree *parent = found_p_pid(NULL, root, (pid_t)3);
-    printf("find! %s \n", target->data->name);
-    printf("find parent %s \n", parent->data->name);
+    tree *target = found_pid(root, 11);
+    tree *parent = found_cur_p_pid(NULL, root, 11);
+    if (target != NULL) {
+        printf("find! %s \n", target->data->name);
+    } else {
+        printf("find! NULL \n");
+    }
+    if (parent != NULL) {
+        printf("find parent %s \n", parent->data->name);
+    } else {
+        printf("find parent NULL \n");
+    }
+    
+    char prefix[100] = "";
+    print_tree(prefix ,root);
 
     return 0;
 }
