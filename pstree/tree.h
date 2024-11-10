@@ -28,3 +28,4 @@ tree *delete_child(tree *head, tree *target);
 void delete_peer(tree *prior, tree *cur, tree *target);
 void insert_tree(tree *root, process *cur, pid_t parent_id);
 void print_tree(char *prefix, tree *root, int mark_p);
+void sort(tree *pre, tree *root);

@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   closedir(dir);
 
   if (mark_n) {
-    //todo 排序
+    sort(NULL, root);
   }
   print_tree("", root, mark_p);
 

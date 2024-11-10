@@ -5,6 +5,9 @@
 static tree *found_end(tree *head);
 static tree *found_cur_p_pid(tree *prior, tree *root, pid_t pid);
 static tree *found_pid(tree *root, pid_t pid);
+static tree *split(tree *head);
+static tree *merge(tree *a, tree *b);
+static tree *mergesort(tree *head);
 
 
 process *create_process(pid_t pid, char *name){
@@ -171,6 +174,102 @@ void print_tree(char *prefix, tree *root, int mark_p){
 }
 
 
+//copy 了一个归并排序
+//1.split
+//2.merge
+//3.mergesort
+
+// static tree *split(tree *head) {
+//     tree * pre = head, *mid = head;
+
+//     while (mid && mid->next)
+//     {
+//         pre = mid;
+//         mid = mid->next;
+//     }
+//     if (pre) {
+//         pre ->next =NULL;
+//     } 
+
+//     return mid;
+// }
+
+static tree *split(tree *head) {
+    tree *slow = head, *fast = head, *prev = NULL;
+    while (fast && fast->next) {
+        prev = slow;
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    if (prev) {
+        prev->next = NULL; // 切断前半部分和后半部分的链接
+    }
+    return slow;
+}
+
+static tree *merge(tree *a, tree *b) {
+    tree *rs = NULL;
+    if (a == NULL) {
+        return b;
+    } else if (b == NULL) {
+        return a;
+    }
+
+    if (a->data->pid > b->data->pid) {
+        rs = a;
+        rs->next = merge(a->next, b);
+    } else {
+        rs = b;
+        rs->next = merge(a, b->next);
+    }
+
+    return rs;
+}
+
+
+static tree *mergesort(tree *head) {
+    if (head == NULL || head ->next == NULL) {
+        return head;
+    }
+    tree *mid = split(head);
+    tree *left = head;
+    tree *right = mid;
+
+    left = mergesort(left);
+    right = mergesort(right);
+
+    return merge(left, right);
+}
+
+
+void sort(tree *pre, tree *root) {
+    tree *merged = NULL;
+    if (root->next != NULL) {
+        merged = mergesort(root);
+        
+        pre ->children = merged;
+        tree *cur = merged;
+        while (cur != NULL)
+        {
+            if (cur ->children != NULL) {
+                sort(cur, cur->children);
+            }
+            
+            cur = cur ->next;
+        }
+        
+    } else {
+        if (root->children != NULL) {
+            sort(root, root->children);
+        }
+    }
+    
+}
+
+
+
+
+
 
 
 /*
@@ -232,11 +331,31 @@ int main(int argc, char *argv[]) {
     }
     
     char prefix[100] = "";
-    print_tree(prefix ,root);
+    sort(NULL, root);
+    print_tree(prefix ,root, 1);
+
+    //test sort
+    process *ap = create_process(1,"1");
+    tree *a = create_tree(ap);
+
+    process *bp = create_process(2,"2");
+    tree *b = create_tree(bp);
+
+    process *cp = create_process(3,"3");
+    tree *c = create_tree(cp);
+
+
+    a->next = c;
+    c->next = b;
+
+
+    tree *s = mergesort(a);
+    print_tree(prefix ,s, 1);    
 
     return 0;
 }
 */
+
 
 
 
