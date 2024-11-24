@@ -2,12 +2,15 @@
 
 #define SIDE 16
 static int w, h;
+static int curx, cury;
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};
   ioe_read(AM_GPU_CONFIG, &info);
   w = info.width;
   h = info.height;
+  curx = (w/SIDE)/2;
+  cury = (h/SIDE)/2;
 }
 
 static void draw_tile(int x, int y, int w, int h, uint32_t color) {
@@ -24,6 +27,7 @@ static void draw_tile(int x, int y, int w, int h, uint32_t color) {
 
 void splash() {
   init();
+  /*
   for (int x = 0; x * SIDE <= w; x ++) {
     for (int y = 0; y * SIDE <= h; y++) {
       if ((x & 1) ^ (y & 1)) {
@@ -31,4 +35,15 @@ void splash() {
       }
     }
   }
+  */
+  draw_tile(curx * SIDE, cury * SIDE, SIDE, SIDE, 0xffffff);
+
+}
+
+void moveup() {
+  draw_tile(curx * SIDE, cury * SIDE, SIDE, SIDE, 0x0);
+
+  cury++;
+
+  draw_tile(curx * SIDE, cury * SIDE, SIDE, SIDE, 0xffffff);
 }

@@ -1,10 +1,13 @@
 #include <game.h>
 
+
 #define KEYNAME(key) \
   [AM_KEY_##key] = #key,
 static const char *key_names[] = {
   AM_KEYS(KEYNAME)
 };
+
+extern void moveup();
 
 void print_key() {
   AM_INPUT_KEYBRD_T event = { .keycode = AM_KEY_NONE };
@@ -13,5 +16,6 @@ void print_key() {
     puts("Key pressed: ");
     puts(key_names[event.keycode]);
     puts("\n");
+    moveup();
   }
 }
