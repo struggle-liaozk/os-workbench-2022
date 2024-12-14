@@ -84,6 +84,9 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co_s -> arg = arg;
   co_s -> status = CO_NEW;
 
+  ALL_CO[ALL_CUR_MAX] = co_s;
+  ALL_CUR_MAX ++;
+
   return co_s;
 }
 
@@ -116,8 +119,9 @@ void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
     //从容器中x随机选一个，longjmp
-    srand(time(NULL));
-    uint8_t next_index = rand() % 127;
+    //srand(time(NULL));
+    //uint8_t next_index = rand() % ALL_CUR_MAX;
+    uint8_t next_index = ALL_CUR_MAX % 2;
 
     struct co* next = ALL_CO[next_index];
     current = next;
@@ -126,7 +130,7 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, *(uintptr_t*)(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, (uintptr_t)(next -> arg));
       break;
     case CO_RUNNING:
       longjmp(next -> context, 1);

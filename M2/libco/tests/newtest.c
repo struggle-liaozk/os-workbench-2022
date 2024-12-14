@@ -3,7 +3,9 @@
 
 void entry(void *arg) {
   while (1) {
+    printf("yeal before");
     printf("%s", (const char *)arg);
+    printf("yeal after");
     co_yield();
   }
 }
