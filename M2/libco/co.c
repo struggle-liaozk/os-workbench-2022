@@ -39,6 +39,32 @@ uint8_t ALL_CUR_MAX = 0; //协程数组的
 struct co *current; //当前正在执行的协程
 
 
+
+
+
+//############### 以下是方法
+
+
+
+static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
+  asm volatile (
+#if __x86_64__
+    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1"
+      : : "b"((uintptr_t)sp), "d"(entry), "a"(arg) : "memory"
+#else
+    "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
+      : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
+#endif
+  );
+}
+
+
+
+
+
+
+
+
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   if (ALL_CUR_MAX == 0) {
     //初始化main 协程，并放在列表的开头位置
@@ -119,14 +145,4 @@ void co_yield() {
 
 }
 
-static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
-  asm volatile (
-#if __x86_64__
-    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1"
-      : : "b"((uintptr_t)sp), "d"(entry), "a"(arg) : "memory"
-#else
-    "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
-      : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
-#endif
-  );
-}
+
