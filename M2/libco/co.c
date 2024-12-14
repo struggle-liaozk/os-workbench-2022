@@ -126,7 +126,7 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, *(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, *(uintptr_t*)(next -> arg));
       break;
     case CO_RUNNING:
       longjmp(next -> context, 1);
