@@ -115,7 +115,7 @@ void co_wait(struct co *co) {
 void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
-    //从容器中随机选一个，longjmp
+    //从容器中x随机选一个，longjmp
     srand(time(NULL));
     uint8_t next_index = rand() % 127;
 
@@ -126,7 +126,7 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, (uintptr_t*)(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, *(next -> arg));
       break;
     case CO_RUNNING:
       longjmp(next -> context, 1);
