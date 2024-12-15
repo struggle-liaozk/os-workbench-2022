@@ -3,16 +3,17 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <time.h>
+#include <stdio.h>
 
 
 
 #ifdef LOCAL_MACHINE
   #define debug(...) printf(__VA_ARGS__)
 #else
-  #define debug()
+  #define debug(...)
 #endif
 
-#define STACK_SIZE  1024 * 128 //假定stack 不会超过128KB
+#define STACK_SIZE  (1024 * 128) + 16 //假定stack 不会超过128KB
 
 
 enum co_status {
@@ -119,9 +120,13 @@ void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
     //从容器中x随机选一个，longjmp
-    //srand(time(NULL));
-    //uint8_t next_index = rand() % ALL_CUR_MAX;
-    uint8_t next_index = ALL_CUR_MAX % 2;
+    srand(time(NULL));
+    uint8_t next_index = rand() % ALL_CUR_MAX;
+    //uint8_t next_index = ALL_CUR_MAX % 2;
+
+    if (next_index != 0) {
+      debug("next_index = %d,ALL_CUR_MAX = %d\n", next_index, ALL_CUR_MAX);
+    }
 
     struct co* next = ALL_CO[next_index];
     current = next;
@@ -130,8 +135,8 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 1]), next -> func, (uintptr_t)(next -> arg));
-      break;
+      stack_switch_call(((char*)(next -> stack) + sizeof(next->stack) - 8), next -> func, (uintptr_t)(next -> arg));
+      break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
       break;

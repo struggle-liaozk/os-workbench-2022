@@ -2,10 +2,10 @@
 #include "co.h"
 
 void entry(void *arg) {
-  while (1) {
-    printf("yeal before");
-    printf("%s", (const char *)arg);
-    printf("yeal after");
+  int i = 1;
+  while (i < 100) {
+    printf("%s, %d", (const char *)arg, i);
+    i++;
     co_yield();
   }
 }
