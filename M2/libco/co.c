@@ -138,7 +138,7 @@ void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
     //从容器中x随机选一个，longjmp
-    ALL_CUR_RAND = ++ALL_CUR_RAND % ALL_CUR_MAX;
+    ALL_CUR_RAND = (ALL_CUR_RAND + 1) % ALL_CUR_MAX;
     //uint8_t next_index = ALL_CUR_MAX % 2;
 
     
