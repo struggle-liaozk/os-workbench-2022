@@ -35,8 +35,8 @@ struct co {
 };
 
 struct co* ALL_CO[128]; //假定不会超过128个协程
-uint8_t ALL_CUR_MAX = 0; //协程数组的
-uint8_t ALL_CUR_RAND = 0;
+static uint8_t ALL_CUR_MAX = 0; //协程数组的
+static uint8_t ALL_CUR_RAND = 0;
 
 
 struct co *current; //当前正在执行的协程
