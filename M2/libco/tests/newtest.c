@@ -2,8 +2,8 @@
 #include "co.h"
 
 void entry(void *arg) {
-  int i = 1;
-  while (i < 100) {
+  int i = 0;
+  while (i < 2) {
     printf("%s, %d", (const char *)arg, i);
     i++;
     co_yield();

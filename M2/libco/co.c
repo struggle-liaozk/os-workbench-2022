@@ -36,6 +36,7 @@ struct co {
 
 struct co* ALL_CO[128]; //假定不会超过128个协程
 uint8_t ALL_CUR_MAX = 0; //协程数组的
+uint8_t ALL_CUR_RAND = 0;
 
 
 struct co *current; //当前正在执行的协程
@@ -51,13 +52,29 @@ struct co *current; //当前正在执行的协程
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
-    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1"
-      : : "b"((uintptr_t)sp), "d"(entry), "a"(arg) : "memory"
+    "movq 16(%%rsp),  %%rcx; movq %%rcx, (%0); \
+     movq 8(%%rsp),  %%rcx; movq %%rcx, -8(%0); \
+     movq %0,  %%rsp; \
+     movq %2, %%rdi; \
+     movq -8(%0), %%rcx; movq %%rcx, %%rbp; \
+     jmp *%1"
+      : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
     "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
       : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
 #endif
   );
+}
+
+
+static inline void restore_return(void *sp) {
+  asm volatile (
+#if __x86_64__
+			"movq 0(%%rsp), %%rcx; movq %%rcx, (%0);" : : "b"((uintptr_t)sp) : "memory"
+#else
+			"movl 4(%%esp), %%ecx; movl %%ecx, (%0);" : :  "b"((uintptr_t)sp - 8) : "memory"
+#endif
+			);
 }
 
 
@@ -113,6 +130,7 @@ void co_wait(struct co *co) {
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
+    debug("wait yield return %s \n", "h");
   }
 }
 
@@ -120,38 +138,47 @@ void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
     //从容器中x随机选一个，longjmp
-    srand(time(NULL));
-    uint8_t next_index = rand() % ALL_CUR_MAX;
+    ALL_CUR_RAND = ++ALL_CUR_RAND % ALL_CUR_MAX;
     //uint8_t next_index = ALL_CUR_MAX % 2;
 
-    if (next_index != 0) {
-      debug("next_index = %d,ALL_CUR_MAX = %d\n", next_index, ALL_CUR_MAX);
-    }
-
-    struct co* next = ALL_CO[next_index];
+    
+    debug("next_index = %d,ALL_CUR_MAX = %d\n", ALL_CUR_RAND, ALL_CUR_MAX);
+    
+    struct co* next = ALL_CO[ALL_CUR_RAND];
     current = next;
 
     switch (next -> status)
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(((char*)(next -> stack) + sizeof(next->stack) - 8), next -> func, (uintptr_t)(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 8]), next -> func, (uintptr_t)(next -> arg));
+      //restore_return(&(next -> stack[STACK_SIZE - 8]));
+      printf("return %s \n", "stcak_switch");
+      next -> status = CO_DEAD;
+      debug("co_new return %s \n", "a");
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
+      debug("co_running return %s \n", "b");
       break;
     case CO_WAITING:
       co_yield();
+      debug("co_wait return %s \n", "c");
       break;
     case CO_DEAD:
       co_yield();
+      debug("co_dead return %s \n", "d");
       break;
     }
+    debug("end %s \n","e");
 
   } else {
     //继续执行当前协程
+    debug("longjmp %s \n", "f");
     return;
   }
+
+  debug("over %s \n", "g");
 
 }
 
