@@ -21,6 +21,7 @@ static void work_loop(void *arg) {
         add_count();
         co_yield();
     }
+    printf("%s \n", "work_loop start ret");
 }
 
 static void work(void *arg) {
@@ -35,7 +36,7 @@ static void test_1() {
     co_wait(thd1);
     co_wait(thd2);
 
-    printf("\n");
+    printf("%s", "test_1 start ret");
 }
 
 // -----------------------------------------------
