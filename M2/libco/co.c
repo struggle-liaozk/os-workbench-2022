@@ -52,11 +52,9 @@ struct co *current; //当前正在执行的协程
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
-    "movq 16(%%rsp),  %%rcx; movq %%rcx, (%0); \
-     movq 8(%%rsp),  %%rcx; movq %%rcx, -8(%0); \
+    "movq 8(%%rsp),  %%rcx; movq %%rcx, (%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
-     movq -8(%0), %%rcx; movq %%rcx, %%rbp; \
      jmp *%1"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
