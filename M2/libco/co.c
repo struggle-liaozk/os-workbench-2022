@@ -161,8 +161,9 @@ void co_yield() {
       debug("return %s \n", "stcak_switch");
       next -> status = CO_DEAD;
       debug("co_new return %s \n", "a");
-
-
+      if (next -> waiter) {
+        next -> waiter -> status = CO_RUNNING;
+      }
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
