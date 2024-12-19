@@ -60,11 +60,11 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      jmp *%1"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
-    "movl 8(%%esp),  %%ecx; movq %%ecx, (%0); \
-     movl 4(%%esp),  %%ecx; movq %%ecx, -4(%0); \
+    "movl 8(%%esp),  %%ecx; movl %%ecx, (%0); \
+     movl 4(%%esp),  %%ecx; movl %%ecx, -4(%0); \
      movl %0,  %%esp; \
      movl %2,  4(%0); \
-     movl -4(%0), %%ecx; movq %%ecx, %%ebp; \
+     movl -4(%0), %%ecx; movl %%ecx, %%ebp; \
      jmp *%1"
       : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
 #endif
