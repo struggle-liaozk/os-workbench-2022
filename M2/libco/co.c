@@ -183,7 +183,7 @@ void co_yield() {
   } else {
     //继续执行当前协程
     debug("longjmp %s \n", "f");
-    printf("%s", "longjmp");
+    printf("%s", "longjmp \n");
     return;
   }
 
