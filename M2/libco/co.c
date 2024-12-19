@@ -158,11 +158,11 @@ void co_yield() {
       next -> status = CO_RUNNING;
       stack_switch_call(&(next -> stack[STACK_SIZE - 8]), next -> func, (uintptr_t)(next -> arg));
       //restore_return(&(next -> stack[STACK_SIZE - 8]));
-      printf("return %s \n", "stcak_switch");
+      debug("return %s \n", "stcak_switch");
       next -> status = CO_DEAD;
       debug("co_new return %s \n", "a");
 
-      
+
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
