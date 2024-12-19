@@ -157,7 +157,7 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 32]), next -> func, (uintptr_t)(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 24]), next -> func, (uintptr_t)(next -> arg));
       //restore_return(&(next -> stack[STACK_SIZE - 8]));
       debug("return %s \n", "stcak_switch");
       next -> status = CO_DEAD;
