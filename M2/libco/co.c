@@ -56,6 +56,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      movq 8(%%rsp),  %%rcx; movq %%rcx, -8(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
+     movq -8(%0), %%rcx; movq %%rcx, %%rbp; \
      jmp *%1"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
@@ -160,6 +161,8 @@ void co_yield() {
       printf("return %s \n", "stcak_switch");
       next -> status = CO_DEAD;
       debug("co_new return %s \n", "a");
+
+      
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
