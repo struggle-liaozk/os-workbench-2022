@@ -130,7 +130,7 @@ void co_wait(struct co *co) {
     ALL_CUR_MAX --;
     //回收
     free(co);
-
+    debug("wait free %s \n", "i");
   } else {
     //yield
     current -> status = CO_WAITING;
