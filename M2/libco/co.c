@@ -42,7 +42,11 @@ static uint8_t ALL_CUR_RAND = 0;
 struct co *current; //当前正在执行的协程
 
 
-
+/**
+ *      movq 16(%%rsp),  %%rcx; movq %%rcx, 16(%0); \
+     movq 8(%%rsp),  %%rcx; movq %%rcx, 8(%0); \
+     movq (%%rsp),  %%rcx; movq %%rcx, 0(%0); \
+ */
 
 
 //############### 以下是方法
@@ -52,10 +56,7 @@ struct co *current; //当前正在执行的协程
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
-    "movq 24(%%rsp),  %%rcx; movq %%rcx, 24(%0); \
-     movq 16(%%rsp),  %%rcx; movq %%rcx, 16(%0); \
-     movq 8(%%rsp),  %%rcx; movq %%rcx, 8(%0); \
-     movq (%%rsp),  %%rcx; movq %%rcx, 0(%0); \
+    "movq 24(%%rsp),  %%rcx; movq %%rcx, 0(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
      jmp *%1"
