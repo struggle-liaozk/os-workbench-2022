@@ -52,8 +52,7 @@ struct co *current; //当前正在执行的协程
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
-    "movq 8(%%rsp),  %%rcx; movq %%rcx, (%0); \
-     movq %0,  %%rsp; \
+    "movq %0,  %%rsp; \
      movq %2, %%rdi; \
      call *%1"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
@@ -154,7 +153,7 @@ void co_yield() {
     {
     case CO_NEW:
       next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 8]), next -> func, (uintptr_t)(next -> arg));
+      stack_switch_call(&(next -> stack[STACK_SIZE - 16]), next -> func, (uintptr_t)(next -> arg));
       //restore_return(&(next -> stack[STACK_SIZE - 8]));
       debug("return %s \n", "stcak_switch");
       next -> status = CO_DEAD;
