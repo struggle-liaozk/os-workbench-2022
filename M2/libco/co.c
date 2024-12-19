@@ -56,10 +56,13 @@ struct co *current; //当前正在执行的协程
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
-    "movq 24(%%rsp),  %%rcx; movq %%rcx, 0(%0); \
+    "movq 24(%%rsp),  %%rcx; movq %%rcx, 24(%0); \
+     movq 16(%%rsp),  %%rcx; movq %%rcx, 16(%0); \
+     movq 8(%%rsp),  %%rcx; movq %%rcx, 8(%0); \
+     movq (%%rsp),  %%rcx; movq %%rcx, 0(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
-     jmp *%1"
+     call *%1"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
     "movl 8(%%esp),  %%ecx; movl %%ecx, (%0); \
@@ -77,7 +80,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 static inline void restore_return(void *sp) {
   asm volatile (
 #if __x86_64__
-			"movq 0(%%rsp), %%rcx; movq %%rcx, (%0);" : : "b"((uintptr_t)sp) : "memory"
+			"movq %%rsp, %%rcx; movq %%rcx, (%0);" : : "b"((uintptr_t)sp) : "memory"
 #else
 			"movl 4(%%esp), %%ecx; movl %%ecx, (%0);" : :  "b"((uintptr_t)sp - 8) : "memory"
 #endif
