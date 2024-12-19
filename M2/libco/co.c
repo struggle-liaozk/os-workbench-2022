@@ -63,8 +63,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      movq %%rsp,  %%rcx; movq %%rcx, 32(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
-     call *%1; \
-     movq (%%rsp), %%rcx; "
+     call *%1;"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
     "movl 8(%%esp),  %%ecx; movl %%ecx, (%0); \
