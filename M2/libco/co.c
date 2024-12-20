@@ -116,7 +116,8 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 void co_wait(struct co *co) {
   if (co -> status == CO_DEAD) {
     uint8_t cur_index = 0;
-    for (int i = 1; i < ALL_CUR_MAX; i ++) {
+    int i = 1;
+    for (i; i < ALL_CUR_MAX; i ++) {
 
       struct co* cur = ALL_CO[i];
       if (cur == co) {
