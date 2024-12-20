@@ -135,17 +135,15 @@ void free_co(struct co* co){
 
 
 void co_wait(struct co *co) {
-  // if (co -> status == CO_DEAD) {
-  //   free_co(co);
-  // } else {
-    
-  // }
-  //yield
+  if (co -> status == CO_DEAD) {
+    free_co(co);
+  } else {
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
     free_co(co);
+  }  
 }
 
 
