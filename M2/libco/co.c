@@ -66,7 +66,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      movl %0,  %%esp; \
      movl %2,  4(%0); \
      call *%1"
-      : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
+      : : "b"((uintptr_t)sp - 4), "d"(entry), "a"(arg) : "memory"
 #endif
   );
 }
@@ -77,7 +77,7 @@ static inline void restore_return(void *sp) {
 #if __x86_64__
 			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
 #else
-			"movl 0(%0), %%esp;" : :  "b"((uintptr_t)sp - 8) : "memory"
+			"movl 0(%0), %%esp;" : :  "b"((uintptr_t)sp - 4) : "memory"
 #endif
 			);
 }
