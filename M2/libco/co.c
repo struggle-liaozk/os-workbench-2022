@@ -34,7 +34,7 @@ struct co {
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
 };
 
-struct co* ALL_CO[128]; //假定不会超过128个协程
+struct co* ALL_CO[128 + 1]; //假定不会超过128个协程
 static uint8_t ALL_CUR_MAX = 0; //协程数组的
 static uint8_t ALL_CUR_RAND = 0;
 
@@ -129,7 +129,7 @@ void co_wait(struct co *co) {
     ALL_CUR_MAX --;
     //回收
     free(co);
-    debug("wait free %s \n", "i");
+    debug("wait free %d \n", i);
   } else {
     //yield
     current -> status = CO_WAITING;
