@@ -113,9 +113,8 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   return co_s;
 }
 
-void co_wait(struct co *co) {
-  if (co -> status == CO_DEAD) {
-    uint8_t cur_index = 0;
+void free_co(struct co* co){
+  uint8_t cur_index = 0;
     int i = 1;
     for (i; i < ALL_CUR_MAX; i ++) {
 
@@ -132,15 +131,23 @@ void co_wait(struct co *co) {
     free(co);
     debug("wait free %d \n", i);
     debug("ALL_CUR_MAX %d \n", ALL_CUR_MAX);
-  } else {
-    //yield
+}
+
+
+void co_wait(struct co *co) {
+  // if (co -> status == CO_DEAD) {
+  //   free_co(co);
+  // } else {
+    
+  // }
+  //yield
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
-    co_wait(co);
-  }
+    free_co(co);
 }
+
 
 void co_yield() {
   int val = setjmp(current->context);
