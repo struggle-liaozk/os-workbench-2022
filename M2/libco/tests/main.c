@@ -16,7 +16,7 @@ static int get_count() {
 
 static void work_loop(void *arg) {
     const char *s = (const char*)arg;
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 200; ++i) {
         printf("%s%d  ", s, get_count());
         add_count();
         co_yield();
@@ -63,7 +63,7 @@ static void do_produce(Queue *queue) {
 
 static void producer(void *arg) {
     Queue *queue = (Queue*)arg;
-    for (int i = 0; i < 100; ) {
+    for (int i = 0; i < 2; ) {
         if (!q_is_full(queue)) {
             // co_yield();
             do_produce(queue);
@@ -106,6 +106,7 @@ static void test_2() {
     co_wait(thd1);
     co_wait(thd2);
 
+    debug("test2 %s"," reset g_running");
     g_running = 0;
 
     co_wait(thd3);

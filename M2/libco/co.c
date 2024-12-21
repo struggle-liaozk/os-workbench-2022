@@ -178,28 +178,16 @@ void co_yield() {
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
-      debug("co_running return %s \n", "b");
       break;
     case CO_WAITING:
       co_yield();
-      debug("co_wait return %s \n", "c");
       break;
     case CO_DEAD:
-      debug("should never arrive %s \n", "d");
       co_yield();
       break;
     }
-    debug("end %s \n","e");
 
-  } else {
-    //继续执行当前协程
-    debug("longjmp %s \n", "f");
-    printf("%s", "longjmp \n");
-    return;
-  }
-
-  debug("over %s \n", "g");
-
+  } 
 }
 
 
