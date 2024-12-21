@@ -141,6 +141,7 @@ void co_wait(struct co *co) {
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
+    free_co(co);
   }  
 }
 
@@ -170,7 +171,6 @@ void co_yield() {
       debug("co_new return %s \n", "a");
       if (current -> waiter) {
         current -> waiter -> status = CO_RUNNING;
-        longjmp(current-> context, 1);
       }
       break; 
     case CO_RUNNING:
