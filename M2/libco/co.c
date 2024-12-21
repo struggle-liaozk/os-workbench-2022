@@ -143,7 +143,7 @@ void co_wait(struct co *co) {
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
-    //free_co(co);
+    free_co(co);
     //current = ALL_CO[0];
   }  
 }
@@ -162,49 +162,35 @@ void co_yield() {
     struct co* next = ALL_CO[ALL_CUR_RAND];
     current = next;
 
-
-    if (next -> status == CO_RUNNING) {
-      longjmp(next -> context, 1);
-    } else {
+    switch (next -> status)
+    {
+    case CO_NEW:
       next -> status = CO_RUNNING;
       stack_switch_call(&(next -> stack[STACK_SIZE - 16]), next -> func, (uintptr_t)(next -> arg));
+      debug("return %s \n", "stcak_switch");
       restore_return(&(next -> stack[STACK_SIZE - 16]));
+      debug("return %s \n", "restore_return");
       next -> status = CO_DEAD;
+      debug("co_new return %s \n", "a");
       if (next -> waiter) {
         next -> waiter -> status = CO_RUNNING;
       }
       co_yield();
+      break; 
+    case CO_RUNNING:
+      longjmp(next -> context, 1);
+      debug("co_running return %s \n", "b");
+      break;
+    case CO_WAITING:
+      co_yield();
+      debug("co_wait return %s \n", "c");
+      break;
+    case CO_DEAD:
+      debug("should never arrive %s \n", "d");
+      co_yield();
+      break;
     }
-
-    // switch (next -> status)
-    // {
-    // case CO_NEW:
-    //   next -> status = CO_RUNNING;
-    //   stack_switch_call(&(next -> stack[STACK_SIZE - 16]), next -> func, (uintptr_t)(next -> arg));
-    //   debug("return %s \n", "stcak_switch");
-    //   restore_return(&(next -> stack[STACK_SIZE - 16]));
-    //   debug("return %s \n", "restore_return");
-    //   next -> status = CO_DEAD;
-    //   debug("co_new return %s \n", "a");
-    //   if (next -> waiter) {
-    //     next -> waiter -> status = CO_RUNNING;
-    //   }
-    //   co_yield();
-    //   break; 
-    // case CO_RUNNING:
-    //   longjmp(next -> context, 1);
-    //   debug("co_running return %s \n", "b");
-    //   break;
-    // case CO_WAITING:
-    //   co_yield();
-    //   debug("co_wait return %s \n", "c");
-    //   break;
-    // case CO_DEAD:
-    //   debug("should never arrive %s \n", "d");
-    //   co_yield();
-    //   break;
-    // }
-    // debug("end %s \n","e");
+    debug("end %s \n","e");
 
   } else {
     //继续执行当前协程
