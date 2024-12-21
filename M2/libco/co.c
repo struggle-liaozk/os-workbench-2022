@@ -158,18 +158,18 @@ void co_yield() {
     struct co* next = ALL_CO[ALL_CUR_RAND];
     current = next;
 
-    switch (next -> status)
+    switch (current -> status)
     {
     case CO_NEW:
-      next -> status = CO_RUNNING;
-      stack_switch_call(&(next -> stack[STACK_SIZE - 16]), next -> func, (uintptr_t)(next -> arg));
+      current -> status = CO_RUNNING;
+      stack_switch_call(&(current -> stack[STACK_SIZE - 16]), current -> func, (uintptr_t)(current -> arg));
       debug("return %s \n", "stcak_switch");
-      restore_return(&(next -> stack[STACK_SIZE - 16]));
+      restore_return(&(current -> stack[STACK_SIZE - 16]));
       debug("return %s \n", "restore_return");
-      next -> status = CO_DEAD;
+      current -> status = CO_DEAD;
       debug("co_new return %s \n", "a");
-      if (next -> waiter) {
-        next -> waiter -> status = CO_RUNNING;
+      if (current -> waiter) {
+        current -> waiter -> status = CO_RUNNING;
       }
       co_yield();
       break; 
