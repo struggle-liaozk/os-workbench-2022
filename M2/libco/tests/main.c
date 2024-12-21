@@ -106,7 +106,7 @@ static void test_2() {
     co_wait(thd1);
     co_wait(thd2);
 
-    debug("test2 %s"," reset g_running");
+    printf("test2 %s"," reset g_running");
     g_running = 0;
 
     co_wait(thd3);
