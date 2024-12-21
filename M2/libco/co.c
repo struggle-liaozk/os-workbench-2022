@@ -127,10 +127,9 @@ void free_co(struct co* co){
       }
     }
     ALL_CUR_MAX --;
+    debug("start wait free %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
     //回收
     free(co);
-    debug("wait free %d \n", i);
-    debug("ALL_CUR_MAX %d \n", ALL_CUR_MAX);
 }
 
 
@@ -144,7 +143,7 @@ void co_wait(struct co *co) {
     co_yield();
     debug("wait yield return %s \n", "h");
     free_co(co);
-    //current = ALL_CO[0];
+    current = ALL_CO[0];
   }  
 }
 
