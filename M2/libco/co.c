@@ -170,7 +170,7 @@ void co_yield() {
       debug("co_new return %s \n", "a");
       if (current -> waiter) {
         current -> waiter -> status = CO_RUNNING;
-        longjmp(current -> waiter -> context, 1);
+        longjmp(current-> context, 1);
       }
       break; 
     case CO_RUNNING:
