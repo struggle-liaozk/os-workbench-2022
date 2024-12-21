@@ -141,6 +141,7 @@ void co_wait(struct co *co) {
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
+    printf("%s","main return");
   }  
 }
 
