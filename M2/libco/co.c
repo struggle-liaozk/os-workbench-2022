@@ -53,7 +53,7 @@ struct co *current; //当前正在执行的协程
 
 
 
-static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
+static inline void stack_switch_call_self(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
     "movq %%rsp,  0(%0); \
@@ -71,13 +71,35 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   );
 }
 
+static inline void stack_switch_call(void *sp, void *entry, void* arg) {
+	asm volatile (
+#if __x86_64__
+			"movq %%rcx, 0(%0); movq %0, %%rsp; movq %2, %%rdi; call *%1"
+			: : "b"((uintptr_t)sp - 16), "d"((uintptr_t)entry), "a"((uintptr_t)arg)
+#else
+			"movl %%ecx, 4(%0); movl %0, %%esp; movl %2, 0(%0); call *%1"
+			: : "b"((uintptr_t)sp - 8), "d"((uintptr_t)entry), "a"((uintptr_t)arg) 
+#endif
+			);
+}
 
-static inline void restore_return(void *sp) {
+
+static inline void restore_return_self(void *sp) {
   asm volatile (
 #if __x86_64__
 			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
 #else
 			"movl 0(%0), %%esp;" : :  "b"((uintptr_t)sp - 4) : "memory"
+#endif
+			);
+}
+
+static inline void restore_return() {
+	asm volatile (
+#if __x86_64__
+			"movq 0(%%rsp), %%rcx" : : 
+#else
+			"movl 4(%%esp), %%ecx" : :  
 #endif
 			);
 }
@@ -127,7 +149,7 @@ void free_co(struct co* co){
       }
     }
     ALL_CUR_MAX --;
-    debug("start wait free %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
+    debug("free %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
     //回收
     free(co);
 }
