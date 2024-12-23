@@ -167,12 +167,12 @@ void co_yield() {
       restore_return((current -> stack + STACK_SIZE - 16));
       debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
-      debug("co_new return %s \n", current -> name);
       if (current -> waiter) {
         debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
         co_yield();
       }
+      debug("co_new return %s \n", current -> name);
       break; 
     case CO_RUNNING:
       longjmp(next -> context, 1);
