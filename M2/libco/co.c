@@ -157,6 +157,7 @@ void co_wait(struct co *co) {
     co_yield();
   }
   free_co(co);
+  current = ALL_CO[0];
 }
 
 
