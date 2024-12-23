@@ -40,7 +40,7 @@ static uint8_t ALL_CUR_MAX = 0; //协程数组的
 static uint8_t ALL_CUR_RAND = 0;
 
 
-struct co* volatile current; //当前正在执行的协程
+struct co *current; //当前正在执行的协程
 
 
 /**
@@ -153,10 +153,11 @@ void co_wait_01(struct co *co) {
 void co_wait(struct co *co) {
   current -> status = CO_WAITING;
   co -> waiter = current;
-  while (co -> status != CO_DEAD){
+  if (co -> status != CO_DEAD){
     co_yield();
   }
   free_co(co);
+  current = ALL_CO[0];
 }
 
 
@@ -177,7 +178,7 @@ void co_yield() {
     switch (current -> status)
     {
     case CO_NEW:
-      current -> status = CO_RUNNING;
+       current -> status = CO_RUNNING;
       stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
       //debug("return stcak_switch %s \n", current -> name);
       restore_return((current -> stack + STACK_SIZE - 16));
@@ -185,10 +186,10 @@ void co_yield() {
       current -> status = CO_DEAD;
       if (current -> waiter) {
         //debug("change waiter status %s \n", current -> name);
-        current = current -> waiter;
-        current -> status = CO_RUNNING;
+        current -> waiter -> status = CO_RUNNING;
       }
-      //debug("co_new return %s \n", current -> name);
+      co_yield();
+      debug("co_new return %s \n", current -> name);
       break; 
     case CO_RUNNING:
       longjmp(current -> context, 1);
