@@ -130,7 +130,7 @@ void free_co(struct co* co){
     ALL_CUR_MAX --;
     debug("free_co %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
     //回收
-    free(co);
+    //free(co);
 }
 
 
@@ -153,7 +153,7 @@ void co_wait_01(struct co *co) {
 void co_wait(struct co *co) {
   current -> status = CO_WAITING;
   co -> waiter = current;
-  if (co -> status != CO_DEAD){
+  while (co -> status != CO_DEAD){
     co_yield();
   }
   free_co(co);
