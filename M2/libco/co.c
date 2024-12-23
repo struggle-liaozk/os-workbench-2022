@@ -143,7 +143,7 @@ void co_wait(struct co *co) {
     co -> waiter = current;
     co_yield();
     debug("stack_switch return in co_wait %s \n", current -> name);
-    if (strcmp("main",current->name)){
+    if (strcmp("main",co->name)){
       free_co(co);
     }
     debug("co_wait return %s \n", current -> name);
@@ -192,7 +192,10 @@ void co_yield() {
       break;
     }
 
-  } 
+  } else {
+    debug("longjmp %s", current -> name);
+  }
+
 }
 
 
