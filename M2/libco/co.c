@@ -167,7 +167,7 @@ void co_yield() {
       restore_return((current -> stack + STACK_SIZE - 16));
       debug("return %s \n", "restore_return");
       current -> status = CO_DEAD;
-      debug("co_new return %s \n", "a");
+      debug("co_new return %s \n", current -> name);
       if (current -> waiter) {
         current -> waiter -> status = CO_RUNNING;
         co_yield();
