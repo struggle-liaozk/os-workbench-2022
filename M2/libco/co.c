@@ -135,11 +135,14 @@ void free_co(struct co* co){
 
 void co_wait(struct co *co) {
   if (co -> status == CO_DEAD) {
-    //free_co(co);
+    debug("co_wait dead %s \n", current -> name);
+    free_co(co);
   } else {
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
+    debug("stack_switch return in co_wait %s \n", current -> name);
+    free_co(co);
     debug("co_wait return %s \n", current -> name);
   }  
 }
@@ -170,8 +173,8 @@ void co_yield() {
       if (current -> waiter) {
         debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
-        //co_yield();
       }
+      co_yield();
       debug("co_new return %s \n", current -> name);
       break; 
     case CO_RUNNING:
