@@ -188,7 +188,6 @@ void co_yield() {
         //debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
       }
-      co_yield();
       debug("co_new return %s \n", current -> name);
       break; 
     case CO_RUNNING:
