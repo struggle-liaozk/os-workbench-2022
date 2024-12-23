@@ -193,7 +193,7 @@ void co_yield() {
     }
 
   } else {
-    debug("longjmp %s", current -> name);
+    debug("longjmp %s \n", current -> name);
   }
 
 }
