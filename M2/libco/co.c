@@ -164,7 +164,7 @@ void co_yield() {
     struct co* next = ALL_CO[ALL_CUR_RAND];
     current = next;
 
-    debug("current = %s , status = %s \n", current->name, current -> status);
+    debug("current = %s , status = %d \n", current->name, current -> status);
     switch (current -> status)
     {
     case CO_NEW:
