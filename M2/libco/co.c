@@ -127,7 +127,7 @@ void free_co(struct co* co){
       }
     }
     ALL_CUR_MAX --;
-    debug("start wait free %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
+    debug("free_co %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
     //回收
     free(co);
 }
@@ -135,13 +135,12 @@ void free_co(struct co* co){
 
 void co_wait(struct co *co) {
   if (co -> status == CO_DEAD) {
-    free_co(co);
+    //free_co(co);
   } else {
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
     debug("wait yield return %s \n", "h");
-    free_co(co);
   }  
 }
 
@@ -171,6 +170,7 @@ void co_yield() {
       debug("co_new return %s \n", "a");
       if (current -> waiter) {
         current -> waiter -> status = CO_RUNNING;
+        co_yield();
       }
       break; 
     case CO_RUNNING:
