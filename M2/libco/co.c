@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <stdio.h>
+#include <string.h>
 
 
 
@@ -142,7 +143,9 @@ void co_wait(struct co *co) {
     co -> waiter = current;
     co_yield();
     debug("stack_switch return in co_wait %s \n", current -> name);
-    free_co(co);
+    if (strcmp("main",current->name)){
+      free_co(co);
+    }
     debug("co_wait return %s \n", current -> name);
   }  
 }
@@ -161,6 +164,7 @@ void co_yield() {
     struct co* next = ALL_CO[ALL_CUR_RAND];
     current = next;
 
+    debug("current = %s , status = %s \n", current->name, current -> status);
     switch (current -> status)
     {
     case CO_NEW:
@@ -178,7 +182,7 @@ void co_yield() {
       debug("co_new return %s \n", current -> name);
       break; 
     case CO_RUNNING:
-      longjmp(next -> context, 1);
+      longjmp(current -> context, 1);
       break;
     case CO_WAITING:
       co_yield();
