@@ -140,7 +140,7 @@ void co_wait(struct co *co) {
     current -> status = CO_WAITING;
     co -> waiter = current;
     co_yield();
-    debug("wait yield return %s \n", "h");
+    debug("co_wait return %s \n", current -> name);
   }  
 }
 
@@ -170,7 +170,7 @@ void co_yield() {
       if (current -> waiter) {
         debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
-        co_yield();
+        //co_yield();
       }
       debug("co_new return %s \n", current -> name);
       break; 
