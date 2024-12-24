@@ -60,16 +60,15 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
     "movq %%rsp,  0(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
-     call *%1; "
+     call *%1; \
+     movq 0(%0), %%rsp;"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
-    "movl %%esp, 0(%0); \
-     movl 4(%%esp),  %%ecx; movl %%ecx, 4(%0); \
-     movl 12(%%esp),  %%ecx; movl %%ecx, 8(%0); \
+    "movl %%esp, 4(%0); \
      movl %0,  %%esp; \
-     sub  $4, %%esp; \
-     movl %2,  -4(%0); \
-     call *%1; "
+     movl %2,  0(%0); \
+     call *%1; \
+     movl 0(%0), %%esp;"
       : : "b"((uintptr_t)sp -16), "d"(entry), "a"(arg) : "memory"
 #endif
   );
@@ -77,6 +76,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 
 
 static inline void restore_return(void *sp) {
+  return;
   asm volatile (
 #if __x86_64__
 			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
