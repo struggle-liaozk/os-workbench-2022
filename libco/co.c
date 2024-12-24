@@ -79,11 +79,7 @@ static inline void restore_return(void *sp) {
 #if __x86_64__
 			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
 #else
-			
-      // "movl 0(%0), %%esp; \
-      //  movl 4(%0),  %%ecx; movl %%ecx, 4(%%esp); \
-      //  movl 8(%0),  %%ecx; movl %%ecx, 12(%%esp); "
-      // : :"b"((uintptr_t)sp -16)  : "memory"
+
 #endif
 			);
 }
