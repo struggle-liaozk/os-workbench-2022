@@ -63,11 +63,15 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      call *%1; "
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
-    "movl %%esp, 4(%0); \
+    "movl %%esp, 0(%0); \
+     movl 4(%%esp),  %%ecx; movl %%ecx, 4(%0); \
+     movl 8(%%esp),  %%ecx; movl %%ecx, 8(%0); \
+     movl 12(%%esp),  %%ecx; movl %%ecx, 12(%0); \
      movl %0,  %%esp; \
-     movl %2,  0(%0); \
+     sub  $4, %%esp; \
+     movl %2,  -4(%0); \
      call *%1; \
-     movl 0(%0), %%esp;"
+     add  $4, %%esp; "
       : : "b"((uintptr_t)sp -16), "d"(entry), "a"(arg) : "memory"
 #endif
   );
@@ -79,7 +83,11 @@ static inline void restore_return(void *sp) {
 #if __x86_64__
 			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
 #else
-      "nop;"
+			"movl 0(%0), %%esp; \
+       movl 4(%0),  %%ecx; movl %%ecx, 4(%%esp); \
+       movl 8(%0),  %%ecx; movl %%ecx, 8(%%esp); \
+       movl 12(%0),  %%ecx; movl %%ecx, 12(%%esp); " 
+      : :"b"((uintptr_t)sp -16)  : "memory"
 #endif
 			);
 }
