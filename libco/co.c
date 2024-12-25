@@ -219,7 +219,7 @@ void co_yield() {
       longjmp(current -> context, 1);
       break;
     default:
-      return;
+      co_yield();
     }
 
   } else {
