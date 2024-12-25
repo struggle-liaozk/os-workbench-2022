@@ -70,10 +70,17 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   asm volatile (
 #if __x86_64__
     "movq %%rsp,  0(%0); \
+     movq %%rdi,  8(%0); \
+     movq %%rsi,  16(%0); \
+     movq %%rdx,  24(%0); \
+     movq %%rcx,  32(%0); \
+     movq %%rax,  40(%0); \
+     movq %%r8,   48(%0); \
+     movq %%r9,   56(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
      call *%1;"
-      : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
+      : : "b"((uintptr_t)sp-64), "d"(entry), "a"(arg)  : "memory"
 #else
     "movl %%esp, -0x8(%0); \
     leal -0xC(%0), %%esp; \
@@ -98,7 +105,17 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 static inline void restore_return(void *sp) {
   asm volatile (
 #if __x86_64__
-			"movq 0(%0), %%rsp;" : : "b"((uintptr_t)sp) : "memory"
+			"movq 0(%0), %%rsp; \
+      movq 8(%0),  %%rdi; \
+      movq 16(%0), %%rsi; \
+      movq 24(%0),  %%rdx; \
+      movq 32(%0),  %%rcx; \
+      movq 40(%0),  %%rax; \
+      movq 48(%0),  %%r8; \
+      movq 56(%0),  %%r9; "
+      : 
+      : "b"((uintptr_t)sp-64) 
+      : "memory"
 #else
 			"movl -0x8(%0), %%esp"
 		:
