@@ -206,7 +206,7 @@ void co_yield() {
     case CO_NEW:
        current -> status = CO_RUNNING;
       stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
-      //debug("return stcak_switch %s \n", current -> name);
+      debug("return stcak_switch %s \n", current -> name);
       //restore_return((current -> stack + STACK_SIZE - 16));
       //debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
