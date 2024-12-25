@@ -74,7 +74,6 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      movq %%rsi,  16(%0); \
      movq %%rdx,  24(%0); \
      movq %%rcx,  32(%0); \
-     movq %%rax,  40(%0); \
      movq %%r8,   48(%0); \
      movq %%r9,   56(%0); \
      movq %0,  %%rsp; \
@@ -110,7 +109,6 @@ static inline void restore_return(void *sp) {
       movq 16(%0), %%rsi; \
       movq 24(%0),  %%rdx; \
       movq 32(%0),  %%rcx; \
-      movq 40(%0),  %%rax; \
       movq 48(%0),  %%r8; \
       movq 56(%0),  %%r9; "
       : 
