@@ -219,12 +219,8 @@ void co_yield() {
     case CO_RUNNING:
       longjmp(current -> context, 1);
       break;
-    case CO_WAITING:
-      co_yield();
-      break;
-    case CO_DEAD:
-      co_yield();
-      break;
+    default:
+      return;
     }
 
   } else {
