@@ -221,14 +221,15 @@ void co_yield() {
       current -> status = CO_RUNNING;
       stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
       debug("return stcak_switch %s \n", current -> name);
-      restore_return((current -> stack + STACK_SIZE - 16));
+      //restore_return((current -> stack + STACK_SIZE - 16));
       //debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
       if (current -> waiter) {
         //debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
       }
-      debug("co_new return %s \n", current -> name);
+      debug("co exec over start return %s \n", current -> name);
+      co_yield();
       break; 
     case CO_RUNNING:
       longjmp(current -> context, 1);
