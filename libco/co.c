@@ -227,7 +227,6 @@ void co_yield() {
       if (current -> waiter) {
         //debug("change waiter status %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
-        current = ALL_CO[0];
       }
       debug("co exec over start return %s \n", current -> name);
       co_yield();
