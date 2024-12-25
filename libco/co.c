@@ -72,8 +72,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
     "movq %%rsp,  0(%0); \
      movq %0,  %%rsp; \
      movq %2, %%rdi; \
-     call *%1; \
-     movq 0(%0), %%rsp;"
+     call *%1;"
       : : "b"((uintptr_t)sp), "d"(entry), "a"(arg)  : "memory"
 #else
     "movl %%esp, -0x8(%0); \
@@ -207,7 +206,7 @@ void co_yield() {
        current -> status = CO_RUNNING;
       stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
       debug("return stcak_switch %s \n", current -> name);
-      //restore_return((current -> stack + STACK_SIZE - 16));
+      restore_return((current -> stack + STACK_SIZE - 16));
       //debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
       if (current -> waiter) {
