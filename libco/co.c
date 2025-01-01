@@ -120,10 +120,10 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
      call *%1;"
       : : "b"((uintptr_t)sp-64), "d"(entry), "a"(arg)  : "memory"
 #else
-    "movl %%esp, -0x8(%0); \
-    leal -0xc(%0), %%esp; \
-    movl %2, -0xc(%0); \
-    call *%1; "
+    "movl %%ecx, 4(%0); \
+     movl %0, %%esp; \
+     movl %2, 0(%0); \
+     call *%1; "
 		:
 		: "b"((uintptr_t)sp), "d"(entry), "a"(arg)
 		: "memory"
@@ -153,10 +153,10 @@ static inline void restore_return(void *sp) {
       : "b"((uintptr_t)sp-64) 
       : "memory"
 #else
-			"movl -0x8(%0), %%esp"
+			"movl 4(%%esp), %%ecx"
 		:
-		: "b"((uintptr_t)sp)
-		: "memory"
+		: 
+		: 
 #endif
 			);
 }
