@@ -247,7 +247,7 @@ void co_yield() {
         current -> waiter -> status = CO_RUNNING;
       }
       debug("co exec over start return %s \n", current -> name);
-      co_yield();
+      co_yield();//这里执行
     } else {
       longjmp(current -> context, 1);
     }
