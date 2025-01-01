@@ -154,7 +154,7 @@ static inline void restore_return(void *sp) {
       : "memory"
 #else
 			"movl 4(%0), %%esp; \
-      sub $16, %%esp;"
+      sub $8, %%esp;"
 		:
 		: "b"((uintptr_t)sp-4) 
 		: "memory"
