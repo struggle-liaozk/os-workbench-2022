@@ -36,7 +36,7 @@ struct co {
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
 };
 
-typedef struct NODE{
+typedef struct CONODE{
   struct co *coroutine;
   CONODE *f, *b;
 }CONODE;
