@@ -38,7 +38,7 @@ struct co {
 
 typedef struct CONODE{
   struct co *coroutine;
-  CONODE *f, *b;
+  struct CONODE *f, *b;
 }CONODE;
 
 static CONODE *ALL_COROUTINE = NULL;
