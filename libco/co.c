@@ -64,7 +64,7 @@ static CONODE *co_node_remove() {
   if (ALL_COROUTINE == NULL) {
     return rs;
   }
-  if (ALL_COROUTINE -> b = ALL_COROUTINE) {
+  if (ALL_COROUTINE -> b == ALL_COROUTINE) {
     rs = ALL_COROUTINE;
     ALL_COROUTINE = NULL;
   } else {
