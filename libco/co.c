@@ -227,7 +227,7 @@ void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
     //获取下一个处于co_new / co_running 状态
-    while (ALL_COROUTINE -> coroutine ->status != CO_NEW || ALL_COROUTINE -> coroutine ->status != CO_RUNNING) {
+    while (ALL_COROUTINE -> coroutine ->status != CO_NEW && ALL_COROUTINE -> coroutine ->status != CO_RUNNING) {
       ALL_COROUTINE = ALL_COROUTINE -> b;
     }
     
