@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 
 
@@ -35,9 +36,47 @@ struct co {
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
 };
 
-struct co* ALL_CO[128 + 1]; //假定不会超过128个协程
-static uint8_t ALL_CUR_MAX = 0; //协程数组的
-static uint8_t ALL_CUR_RAND = 0;
+typedef struct NODE{
+  struct co *coroutine;
+  CONODE *f, *b;
+}CONODE;
+
+static CONODE *ALL_COROUTINE = NULL;
+
+static void co_node_insert(struct co *newcoroutine) {
+  CONODE *node = (CONODE*) malloc(sizeof(CONODE));
+  assert(node);
+
+  node -> coroutine = newcoroutine;
+  if (ALL_COROUTINE) {
+    node -> f = ALL_COROUTINE -> f;
+    node -> b = ALL_COROUTINE;
+    node -> b -> f = node -> f -> b =node;
+  } else {
+    node -> f = node -> b = node;
+    ALL_COROUTINE = node;
+  }
+}
+
+static CONODE *co_node_remove() {
+  CONODE *rs = NULL;
+  
+  if (ALL_COROUTINE == NULL) {
+    return rs;
+  }
+  if (ALL_COROUTINE -> b = ALL_COROUTINE) {
+    rs = ALL_COROUTINE;
+    ALL_COROUTINE = NULL;
+  } else {
+    rs = ALL_COROUTINE;
+    ALL_COROUTINE = ALL_COROUTINE -> b;
+    ALL_COROUTINE -> f = rs -> f;
+    ALL_COROUTINE -> f -> b = ALL_COROUTINE;
+
+  }
+
+  return rs;
+}
 
 
 struct co *current; //当前正在执行的协程
@@ -125,70 +164,54 @@ static inline void restore_return(void *sp) {
 
 
 
+/*
+初始化
+*/
+static __attribute__((constructor)) void init() {
+  struct co *main= co_start("main", NULL, NULL);
+  main -> status = CO_RUNNING;
+  current = main;
+}
 
+/*
+析构
+*/
+static __attribute__((destructor)) void destory() {
+  if (ALL_COROUTINE == NULL) {
+    return;
+  }
+  while (ALL_COROUTINE) {
+    current = ALL_COROUTINE -> coroutine;
+    free(current);
+    free(co_node_remove());
+  }
+}
 
 
 
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-  if (ALL_CUR_MAX == 0) {
-    //初始化main 协程，并放在列表的开头位置
-    struct co* co_main = (struct co*)malloc(sizeof(struct co));
-    co_main -> name = "main";
-    co_main -> status = CO_RUNNING;
-    ALL_CO[0] = co_main;
-    ALL_CUR_MAX ++;
-    current = co_main;
-  }
-
   //开始执行真正的start 操作
   struct co* co_s = (struct co*)malloc(sizeof(struct co));
+  assert(co_s);
   co_s -> name = name;
   co_s -> func = func;
   co_s -> arg = arg;
   co_s -> status = CO_NEW;
+  co_s ->waiter = NULL;
 
-  ALL_CO[ALL_CUR_MAX] = co_s;
-  ALL_CUR_MAX ++;
+  co_node_insert(co_s);
 
   return co_s;
 }
 
-void free_co(struct co* co){
-  uint8_t cur_index = 0;
-    int i = 1;
-    for (i; i < ALL_CUR_MAX; i ++) {
-
-      struct co* cur = ALL_CO[i];
-      if (cur == co) {
-        cur_index = i;
-      }
-      if (i >= cur_index) {
-        ALL_CO[i] = ALL_CO[i + 1];
-      }
-    }
-    ALL_CUR_MAX --;
-    debug("free_co %s ,ALL_CUR_MAX = %d \n", co->name, ALL_CUR_MAX);
-    //回收
-    //free(co);
-}
-
-
-void co_wait_01(struct co *co) {
-  if (co -> status == CO_DEAD) {
-    debug("co_wait dead %s \n", current -> name);
-    free_co(co);
-  } else {
-    current -> status = CO_WAITING;
-    co -> waiter = current;
-    co_yield();
-    debug("stack_switch return in co_wait %s \n", current -> name);
-    if (strcmp("main",co->name)){
-      free_co(co);
-    }
-    debug("co_wait return %s \n", current -> name);
-  }  
-}
+static void free_co(struct co *co) {
+  while (ALL_COROUTINE ->coroutine != co) {
+    ALL_COROUTINE = ALL_COROUTINE -> b;
+  }
+  free(ALL_COROUTINE -> coroutine);
+  free(co_node_remove());
+} 
 
 void co_wait(struct co *co) {
   current -> status = CO_WAITING;
@@ -197,52 +220,41 @@ void co_wait(struct co *co) {
     co_yield();
   }
   free_co(co);
-  
 }
 
 
 void co_yield() {
   int val = setjmp(current->context);
   if (val == 0) {
-    //从容器中x随机选一个，longjmp
-    ALL_CUR_RAND = (ALL_CUR_RAND + 1) % ALL_CUR_MAX;
-    //uint8_t next_index = ALL_CUR_MAX % 2;
-
+    //获取下一个处于co_new / co_running 状态
+    while (ALL_COROUTINE -> coroutine ->status != CO_NEW || ALL_COROUTINE -> coroutine ->status != CO_RUNNING) {
+      ALL_COROUTINE = ALL_COROUTINE -> b;
+    }
     
-    debug("next_index = %d,ALL_CUR_MAX = %d\n", ALL_CUR_RAND, ALL_CUR_MAX);
-    
-    struct co* next = ALL_CO[ALL_CUR_RAND];
+    struct co* next = ALL_COROUTINE -> coroutine;
     current = next;
+    debug("next name %s, next status %d \n", next -> name, next -> status);
 
-    debug("current = %s , status = %d \n", current->name, current -> status);
-    switch (current -> status)
-    {
-    case CO_NEW:
+    if (current -> status == CO_NEW) {
       current -> status = CO_RUNNING;
       stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
       debug("return stcak_switch %s \n", current -> name);
       restore_return((current -> stack + STACK_SIZE - 16));
-      //debug("return restore_return %s \n", current -> name);
+      debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
       if (current -> waiter) {
-        //debug("change waiter status %s \n", current -> name);
+        debug("change waiter status to running %s \n", current -> name);
         current -> waiter -> status = CO_RUNNING;
-        //current = ALL_CO[0];
       }
       debug("co exec over start return %s \n", current -> name);
       co_yield();
-      break; 
-    case CO_RUNNING:
+    } else {
       longjmp(current -> context, 1);
-      break;
-    default:
-      co_yield();
     }
-
   } else {
     debug("longjmp %s \n", current -> name);
   }
-
+  debug("co_yield return current name = %s \n", current -> name);
 }
 
 
