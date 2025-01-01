@@ -153,7 +153,8 @@ static inline void restore_return(void *sp) {
       : "b"((uintptr_t)sp-64) 
       : "memory"
 #else
-			"movl 4(%0), %%esp;"
+			"movl 4(%0), %%esp; \
+      sub 8, %%esp;"
 		:
 		: "b"((uintptr_t)sp-4) 
 		: "memory"
@@ -237,9 +238,9 @@ void co_yield() {
 
     if (current -> status == CO_NEW) {
       ((struct co volatile*)current) -> status = CO_RUNNING;
-      //stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
+      stack_switch_call((current -> stack + STACK_SIZE - 16), current -> func, (uintptr_t)(current -> arg));
       debug("return stcak_switch %s \n", current -> name);
-      //restore_return((current -> stack + STACK_SIZE - 16));
+      restore_return((current -> stack + STACK_SIZE - 16));
       debug("return restore_return %s \n", current -> name);
       current -> status = CO_DEAD;
       if (current -> waiter) {
