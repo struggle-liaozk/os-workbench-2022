@@ -1,8 +1,12 @@
 #include <kernel.h>
 #include <klib.h>
+#include "thread.h"
 
+static void entry(int tid) { pmm->alloc(128); }
+static void goodbye()      { printf("End.\n"); }
 int main() {
-  os->init();
-  mpe_init(os->run);
-  return 1;
+  pmm->init();
+  for (int i = 0; i < 4; i++)
+    create(entry);
+  join(goodbye);
 }
